@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GeoVision 3.0</title>
+    <style>
+        body { 
+            margin: 0;
+            background: #121212;
+            color: #00FF00;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        #map { 
+            width: 100vw; 
+            height: 100vh; 
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+    <!-- Load Maplibre GL -->
+    <script src='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js'></script>
+    <link href='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css' rel='stylesheet' />
+</head>
+<body>
+    <div id="map"></div>
+    <div id="info">
+        <h2>GeoVision 3.0</h2>
+        <p>Inequality Heatmap Demo</p>
+    </div>
+
+    <script>
+        // Initialize map (Delhi coordinates)
+        const map = new maplibre.Map({
+            container: 'map',
+            style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+            center: [77.2, 28.6],
+            zoom: 10
+        });
+
+        // Mock slum data (replace with real API later)
+        map.on('load', () => {
+            map.addSource('slums', {
+                type: 'geojson',
+                data: {
+                    "type": "FeatureCollection",
+                    "features": [
+                        {
+                            "type": "Feature",
+                            "properties": { "score": 87 },
+                            "geometry": {
+                                "type": "Point",
+                                "coordinates": [77.2, 28.6]
+                            }
+                        },
+                        {
+                            "type": "Feature",
+                            "properties": { "score": 92 },
+                            "geometry": {
+                                "type": "Point",
+                                "coordinates": [77.21, 28.59]
+                            }
+                        }
+                    ]
+                }
+            });
+
+            // Add heatmap layer
+            map.addLayer({
+                id: 'slum-heatmap',
+                type: 'heatmap',
+                source: 'slums',
+                paint: {
+                    'heatmap-weight': [
+                        'interpolate',
+                        ['linear'],
+                        ['get', 'score'],
+                        0, 0,
+                        100, 1
+                    ],
+                    'heatmap-color': [
+                        'interpolate',
+                        ['linear'],
+                        ['heatmap-density'],
+                        0, 'rgba(0, 255, 0, 0)',
+                        0.2, 'rgba(0, 255, 0, 0.5)',
+                        0.4, 'rgba(255, 255, 0, 0.8)',
+                        0.6, 'rgba(255, 165, 0, 0.9)',
+                        1, 'rgba(255, 0, 0, 1)'
+                    ],
+                    'heatmap-radius': 20,
+                    'heatmap-opacity': 0.8
+                }
+            });
+        });
+    </script>
+</body>
+</html>
